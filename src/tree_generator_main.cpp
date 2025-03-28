@@ -19,7 +19,10 @@ int main(int argc, char** argv)
     uint64_t buffer_size = 0;
     put_mmap_to_buffer(pid, &buf, &buffer_size);
 
-    std::vector<vm_page_parced> pages_parced{};
-    parce_mmap_buffer(pages_parced, buf, buffer_size);
+    std::vector<vm_page_parced> pages_parced = parce_mmap_buffer(buf, buffer_size);
     
+
+    make_tree(pages_parced);
+
 }
+

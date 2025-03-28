@@ -46,8 +46,10 @@ void put_mmap_to_buffer(pid_t pid, char** buf, uint64_t* buffer_size)
     fclose(mmap_file);
 }
 
-void parce_mmap_buffer(std::vector<vm_page_parced>& pages_parced, char* buf, uint64_t buffer_size)
+std::vector<vm_page_parced> parce_mmap_buffer(char* buf, uint64_t buffer_size)
 {
+    std::vector<vm_page_parced> pages_parced;
+
     std::vector<vm_page> pages{};
     uint64_t amnt_pages = parce_buff_on_pages(pages, buf, buffer_size);
 
@@ -59,6 +61,8 @@ void parce_mmap_buffer(std::vector<vm_page_parced>& pages_parced, char* buf, uin
         pages_parced.push_back(page_parced);
         // printf("%x %x %x %x %x\n", pages_parced[cnt].vpn[0], pages_parced[cnt].vpn[1], pages_parced[cnt].vpn[2], pages_parced[cnt].vpn[3], pages_parced[cnt].vpn[4]);
     }
+
+    return pages_parced;
 }
 
 uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf, uint64_t buffer_size)
@@ -112,3 +116,16 @@ uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf, uint64_t bu
 
     return amnt_lines - 1;
 }
+
+vpn_node* make_tree(std::vector<vm_page>& pages)
+{
+    for (uint64_t )
+}
+
+void vpn_node::push(vpn_node* node, vpn_node* parent)
+{
+    parent->children.push_back(node);
+
+    node->parent = parent;
+}
+
