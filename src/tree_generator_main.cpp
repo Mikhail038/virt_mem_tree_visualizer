@@ -2,8 +2,6 @@
 #include <stdint.h>
 #include <assert.h>
 
-#include <vector>
-
 #include "tree_generator.h"
 
 int main(int argc, char** argv)
@@ -21,6 +19,7 @@ int main(int argc, char** argv)
     uint64_t buffer_size = 0;
     put_mmap_to_buffer(pid, &buf, &buffer_size);
 
-    std::vector<vm_page> pages{};
+    std::vector<vm_page_parced> pages_parced{};
+    parce_mmap_buffer(pages_parced, buf, buffer_size);
     
 }
