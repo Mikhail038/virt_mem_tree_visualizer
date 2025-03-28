@@ -3,8 +3,11 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdint.h>
+#include <iostream>
 
 #include <vector>
+
+#include "tree.hh"
 
 #include "tree_generator.h"
 #include "parcer.h"
@@ -46,12 +49,12 @@ void put_mmap_to_buffer(pid_t pid, char** buf, uint64_t* buffer_size)
     fclose(mmap_file);
 }
 
-std::vector<vm_page_parced> parce_mmap_buffer(char* buf, uint64_t buffer_size)
+std::vector<vm_page_parced> parce_mmap_buffer(char* buf)
 {
     std::vector<vm_page_parced> pages_parced;
 
     std::vector<vm_page> pages{};
-    uint64_t amnt_pages = parce_buff_on_pages(pages, buf, buffer_size);
+    uint64_t amnt_pages = parce_buff_on_pages(pages, buf);
 
     for (uint64_t cnt = 0; cnt < amnt_pages; cnt++)
     {
@@ -65,7 +68,7 @@ std::vector<vm_page_parced> parce_mmap_buffer(char* buf, uint64_t buffer_size)
     return pages_parced;
 }
 
-uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf, uint64_t buffer_size)
+uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf)
 {
     /* count amount of lines */
     char sym = '\0';
@@ -106,7 +109,7 @@ uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf, uint64_t bu
     {
         vm_page page;
 
-        sscanf(line_ptrs[cnt], "%llx : pfn %llx", &(page.vpn), &(page.pfn));
+        sscanf(line_ptrs[cnt], "%lx : pfn %x", &(page.vpn), &(page.pfn));
 
         pages.push_back(page);
 
@@ -117,15 +120,38 @@ uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf, uint64_t bu
     return amnt_lines - 1;
 }
 
-vpn_node* make_tree(std::vector<vm_page>& pages)
-{
-    for (uint64_t )
+void print_pages(const std::vector<vm_page_parced>& pages) {
+    std::cout << "-- Size: " << pages.size() << "\n";
+    for (auto& page : pages) {
+        page.print();
+    }
 }
 
-void vpn_node::push(vpn_node* node, vpn_node* parent)
-{
-    parent->children.push_back(node);
+using PagesVector = std::vector<vm_page_parced>;
 
-    node->parent = parent;
+// pages is modified inside
+tree<uint16_t> make_tree(PagesVector pages)
+{
+    tree<uint16_t> result{};
+
+    auto compare_by_first = [](const vm_page_parced& lhs, const vm_page_parced& rhs) {
+        return lhs.vpn[0] == rhs.vpn[0];
+    };
+
+    PagesVector first_layer_pages = pages;
+    auto last = std::unique(first_layer_pages.begin(), first_layer_pages.end(), compare_by_first);
+    first_layer_pages.erase(last, first_layer_pages.end());
+
+    print_pages(first_layer_pages);
+
+    for (auto& first_page : first_layer_pages)
+    {
+        PagesVector second_layer_pages; // for the node first_page
+        std::copy(pages.begin(), pages.end(), [&](const vm_page_parced& page) {
+                                                return page.vpn[0] == first_page.vpn[0];});
+    }
+
+
+    return {};
 }
 
