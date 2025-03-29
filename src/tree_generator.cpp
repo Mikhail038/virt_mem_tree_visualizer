@@ -49,9 +49,11 @@ void put_mmap_to_buffer(pid_t pid, char** buf, uint64_t* buffer_size)
     fclose(mmap_file);
 }
 
-std::vector<vm_page_parced> parce_mmap_buffer(char* buf)
+using pages_vector = std::vector<vm_page_parced>;
+
+pages_vector parce_mmap_buffer(char* buf)
 {
-    std::vector<vm_page_parced> pages_parced;
+    pages_vector pages_parced;
 
     std::vector<vm_page> pages{};
     uint64_t amnt_pages = parce_buff_on_pages(pages, buf);
@@ -120,38 +122,73 @@ uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf)
     return amnt_lines - 1;
 }
 
-void print_pages(const std::vector<vm_page_parced>& pages) {
+void print_pages(const pages_vector& pages) {
     std::cout << "-- Size: " << pages.size() << "\n";
     for (auto& page : pages) {
         page.print();
     }
 }
 
-using PagesVector = std::vector<vm_page_parced>;
 
 // pages is modified inside
-tree<uint16_t> make_tree(PagesVector pages)
+tree<uint16_t> make_tree(pages_vector& pages)
 {
     tree<uint16_t> result{};
+    tree<uint16_t>::iterator top;
+    top = result.begin();
+    
+    result.insert(top, 0);//let s think first page can only be one //FIXME
 
-    auto compare_by_first = [](const vm_page_parced& lhs, const vm_page_parced& rhs) {
-        return lhs.vpn[0] == rhs.vpn[0];
-    };
+    uint16_t start_fixed_vpn[VPN_BLOCKS_AMNT] = {0};
+    find_unique(pages, start_fixed_vpn, 1, result, top); 
 
-    PagesVector first_layer_pages = pages;
-    auto last = std::unique(first_layer_pages.begin(), first_layer_pages.end(), compare_by_first);
-    first_layer_pages.erase(last, first_layer_pages.end());
+    printf("!!!\n"); //FIXME
+    // abort();
+    tree<uint16_t>::sibling_iterator it = result.begin();
+    while (it != result.end())
+        std::cout << "[" << (*it++) << "]" << std::endl;
 
-    print_pages(first_layer_pages);
+    return result;
+}
 
-    for (auto& first_page : first_layer_pages)
+void find_unique(pages_vector pages, uint16_t fixed_vpn[VPN_BLOCKS_AMNT], 
+                                    uint8_t key_layer, tree<uint16_t> result, tree<uint16_t>::iterator father)
+{
+    std::vector<uint16_t> unique_vpn;
+    std::vector<tree<uint16_t>::iterator> unique_fathers;
+
+    for (uint64_t cnt = 0; cnt < pages.size(); cnt++)
     {
-        PagesVector second_layer_pages; // for the node first_page
-        std::copy(pages.begin(), pages.end(), [&](const vm_page_parced& page) {
-                                                return page.vpn[0] == first_page.vpn[0];});
+        if (std::find(unique_vpn.begin(), unique_vpn.end(), pages[cnt].vpn[key_layer]) == unique_vpn.end())
+        {
+            /* put unique page number in array */
+            unique_vpn.push_back(pages[cnt].vpn[key_layer]);
+            // printf("%x ", pages[cnt].vpn[key_layer]);
+
+            /* put unique page number in tree and itter too array for proper work on next layer */
+            unique_fathers.push_back(result.append_child(father, pages[cnt].vpn[key_layer]));
+        }
     }
 
+    if (key_layer < VPN_BLOCKS_AMNT - 1)
+    {
+        for (uint64_t cnt = 0; cnt < unique_vpn.size(); cnt++)
+        {
+            uint16_t new_fixed_vpn[VPN_BLOCKS_AMNT];
+            for (uint64_t copy_cnt = 0; copy_cnt < key_layer; copy_cnt++)
+            {
+                new_fixed_vpn[copy_cnt] = fixed_vpn[copy_cnt];
+            }
+            new_fixed_vpn[key_layer] = unique_vpn[cnt];
+            // printf("%x!\n", new_fixed_vpn[key_layer]);
 
-    return {};
+            find_unique(pages, new_fixed_vpn, key_layer + 1, result, unique_fathers[cnt]);
+        }        
+    }
+    else
+    {
+        return;
+    }
+
 }
 

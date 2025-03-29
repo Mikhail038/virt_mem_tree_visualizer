@@ -50,4 +50,8 @@ uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf);
 
 tree<uint16_t> make_tree(std::vector<vm_page_parced>& pages);
 
+void find_unique(std::vector<vm_page_parced> pages, uint16_t fixed_vpn[VPN_BLOCKS_AMNT], 
+                                uint8_t key_layer,  tree<uint16_t> result, tree<uint16_t>::iterator father);
+
+
 #endif

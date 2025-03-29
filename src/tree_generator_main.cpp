@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "tree_generator.h"
+#include <iostream>
 
 int main(int argc, char** argv)
 {
@@ -23,5 +24,23 @@ int main(int argc, char** argv)
     
     tree<uint16_t> vm_tree = make_tree(pages_parced);
 
+    printf("!!!\n");
+    // abort();
+    tree<uint16_t>::sibling_iterator it = vm_tree.begin();
+    while (it != vm_tree.end())
+        std::cout << "[" << (*it++) << "]" << std::endl;
+
+    // tree<uint16_t>::iterator sib2 =  vm_tree.begin();
+    // tree<uint16_t>::iterator end2 =  vm_tree.end();
+    // while(sib2!=end2)
+    // { 
+    //     for (uint16_t i=0; i < vm_tree.depth(sib2)-2; ++i)
+    //     {
+    //         std::cout << " ";
+    //     }
+
+    //     std::cout << (*sib2) << std::endl;
+    //     ++sib2;
+    // }
 }
 
