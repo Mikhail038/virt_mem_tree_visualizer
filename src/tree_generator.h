@@ -23,10 +23,12 @@ struct vm_page_parced
     uint32_t pfn;
 
     void print() const {
-        printf("PFN: %x\n", pfn);
-        for (int i = 0; i < VPN_BLOCKS_AMNT; i++) {
-            printf("VPN%d: %x\n", i, vpn[i]);
+        printf("PFN %x\n", pfn);
+        for (uint32_t i = 0; i < VPN_BLOCKS_AMNT; i++)
+        {
+            printf("VPN[%d] %x\n", i, vpn[i]);
         }
+        printf("\n");
     }
 };
 

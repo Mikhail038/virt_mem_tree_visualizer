@@ -49,7 +49,9 @@ void put_mmap_to_buffer(pid_t pid, char** buf, uint64_t* buffer_size)
     fclose(mmap_file);
 }
 
-std::vector<vm_page_parced> parce_mmap_buffer(char* buf)
+using pages_vector = std::vector<vm_page_parced>;
+
+pages_vector parce_mmap_buffer(char* buf)
 {
     std::vector<vm_page_parced> pages_parced;
 
@@ -120,17 +122,16 @@ uint64_t parce_buff_on_pages(std::vector<vm_page>& pages, char* buf)
     return amnt_lines - 1;
 }
 
-void print_pages(const std::vector<vm_page_parced>& pages) {
+void print_pages(const pages_vector& pages) {
     std::cout << "-- Size: " << pages.size() << "\n";
     for (auto& page : pages) {
         page.print();
     }
 }
 
-using PagesVector = std::vector<vm_page_parced>;
 
 // pages is modified inside
-tree<uint16_t> make_tree(PagesVector pages)
+tree<uint16_t> make_tree(pages_vector pages)
 {
     tree<uint16_t> result{};
 
@@ -138,7 +139,7 @@ tree<uint16_t> make_tree(PagesVector pages)
         return lhs.vpn[0] == rhs.vpn[0];
     };
 
-    PagesVector first_layer_pages = pages;
+    pages_vector first_layer_pages = pages;
     auto last = std::unique(first_layer_pages.begin(), first_layer_pages.end(), compare_by_first);
     first_layer_pages.erase(last, first_layer_pages.end());
 
@@ -146,7 +147,7 @@ tree<uint16_t> make_tree(PagesVector pages)
 
     for (auto& first_page : first_layer_pages)
     {
-        PagesVector second_layer_pages; // for the node first_page
+        pages_vector second_layer_pages; // for the node first_page
         std::copy(pages.begin(), pages.end(), [&](const vm_page_parced& page) {
                                                 return page.vpn[0] == first_page.vpn[0];});
     }
