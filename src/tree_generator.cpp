@@ -129,24 +129,15 @@ void print_pages(const pages_vector& pages) {
     }
 }
 
-
-// pages is modified inside
 tree<uint16_t> make_tree(pages_vector& pages)
 {
     tree<uint16_t> result{};
     tree<uint16_t>::iterator top;
-    top = result.begin();
-    
-    result.insert(top, 0);//let s think first page can only be one //FIXME
+
+    top = result.set_head(0);//let s think first page can only be one //FIXME
 
     uint16_t start_fixed_vpn[VPN_BLOCKS_AMNT] = {0};
     find_unique(pages, start_fixed_vpn, 1, result, top); 
-
-    printf("!!!\n"); //FIXME
-    // abort();
-    tree<uint16_t>::sibling_iterator it = result.begin();
-    while (it != result.end())
-        std::cout << "[" << (*it++) << "]" << std::endl;
 
     return result;
 }
@@ -157,13 +148,13 @@ void find_unique(pages_vector pages, uint16_t fixed_vpn[VPN_BLOCKS_AMNT],
     std::vector<uint16_t> unique_vpn;
     std::vector<tree<uint16_t>::iterator> unique_fathers;
 
+    // printf("father [%x]: ", father);
     for (uint64_t cnt = 0; cnt < pages.size(); cnt++)
     {
         if (std::find(unique_vpn.begin(), unique_vpn.end(), pages[cnt].vpn[key_layer]) == unique_vpn.end())
         {
             /* put unique page number in array */
             unique_vpn.push_back(pages[cnt].vpn[key_layer]);
-            // printf("%x ", pages[cnt].vpn[key_layer]);
 
             /* put unique page number in tree and itter too array for proper work on next layer */
             unique_fathers.push_back(result.append_child(father, pages[cnt].vpn[key_layer]));
@@ -180,7 +171,6 @@ void find_unique(pages_vector pages, uint16_t fixed_vpn[VPN_BLOCKS_AMNT],
                 new_fixed_vpn[copy_cnt] = fixed_vpn[copy_cnt];
             }
             new_fixed_vpn[key_layer] = unique_vpn[cnt];
-            // printf("%x!\n", new_fixed_vpn[key_layer]);
 
             find_unique(pages, new_fixed_vpn, key_layer + 1, result, unique_fathers[cnt]);
         }        
@@ -192,3 +182,109 @@ void find_unique(pages_vector pages, uint16_t fixed_vpn[VPN_BLOCKS_AMNT],
 
 }
 
+void print_tree(const tree<uint16_t>& tr)
+{
+    tree<uint16_t>::pre_order_iterator it = tr.begin();
+    tree<uint16_t>::pre_order_iterator end = tr.end();
+
+    if(!tr.is_valid(it)) return;
+
+    uint32_t rootdepth = tr.depth(it);
+
+    std::cout << "-----" << std::endl;
+    while(it != end) 
+    {
+        for(uint32_t cnt = 0; cnt < tr.depth(it) - rootdepth; ++cnt)
+            std::cout << "  ";
+        std::cout << (*it) << std::endl << std::flush;
+        ++it;
+    }
+    std::cout << "-----" << std::endl;
+}
+
+void tree_to_json(const tree<uint16_t>& tr, const char* json_filename)
+{
+    tree<uint16_t>::pre_order_iterator it = tr.begin();
+    tree<uint16_t>::pre_order_iterator end = tr.end();
+
+    if(!tr.is_valid(it)) return;
+
+    uint32_t rootdepth = tr.depth(it);
+
+    FILE* json_file = fopen(json_filename, "w");
+    fprintf(json_file, "[\n");
+
+    while(it != end) 
+    {
+        uint8_t cnt = 0;
+        for(cnt = 0; cnt < tr.depth(it) - rootdepth; ++cnt)
+        {
+            fprintf(json_file, "   ");
+        }
+        
+        fprintf(json_file, "{\"Item\": { \"Name\": \"%x\" },\n", (*it));
+
+        if (cnt < VPN_BLOCKS_AMNT - 2)
+        {
+            for (uint8_t i = 0; i < tr.depth(it) - rootdepth; ++i)
+            {
+                fprintf(json_file, "   ");
+            }
+
+            fprintf(json_file, "\"Children\": [\n");
+        }
+        // std::cout << (*it) << std::endl << std::flush;
+        
+        // while (cnt != 0)
+        // {
+        //     fprintf(json_file, "}]");
+        //     --cnt;
+        // }
+
+        ++it;
+    }
+
+    fprintf(json_file, "]");
+    fclose(json_file);
+}
+
+// {
+//     "Item": {
+//         "Name": "B"
+//     },
+//     "Children": [{
+//         "Item": {
+//            "Name": "BA"
+//         },
+//         "Children": [{
+//             "Item": {
+//                 "Name": "BAA"
+//             },
+//             "Children": [{
+//                 "Item": {
+//                     "Name": "BAAA"
+//                 }
+//             }, {
+//                 "Item": {
+//                     "Name": "BAAB"
+//                 }
+//             }, {
+//                 "Item": {
+//                     "Name": "BAAC"
+//                 }
+//             }]
+//         }, {
+//             "Item": {
+//                 "Name": "BAB"
+//             },
+//             "Children": [{
+//                 "Item": {
+//                     "Name": "BABA"
+//                 }
+//             }]
+//        }]
+//     }, {
+//         "Item":{
+//             "Name": "BB"
+//         }
+//     }]

@@ -54,4 +54,8 @@ void find_unique(std::vector<vm_page_parced> pages, uint16_t fixed_vpn[VPN_BLOCK
                                 uint8_t key_layer,  tree<uint16_t> result, tree<uint16_t>::iterator father);
 
 
+void print_tree(const tree<uint16_t>& tr);
+
+void tree_to_json(const tree<uint16_t>& tr, const char* json_filename);
+
 #endif

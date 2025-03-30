@@ -24,23 +24,10 @@ int main(int argc, char** argv)
     
     tree<uint16_t> vm_tree = make_tree(pages_parced);
 
-    printf("!!!\n");
-    // abort();
-    tree<uint16_t>::sibling_iterator it = vm_tree.begin();
-    while (it != vm_tree.end())
-        std::cout << "[" << (*it++) << "]" << std::endl;
+    // print_tree(vm_tree);
 
-    // tree<uint16_t>::iterator sib2 =  vm_tree.begin();
-    // tree<uint16_t>::iterator end2 =  vm_tree.end();
-    // while(sib2!=end2)
-    // { 
-    //     for (uint16_t i=0; i < vm_tree.depth(sib2)-2; ++i)
-    //     {
-    //         std::cout << " ";
-    //     }
+    const char* json_filename = "tree.json";
+    tree_to_json(vm_tree, json_filename);
 
-    //     std::cout << (*sib2) << std::endl;
-    //     ++sib2;
-    // }
 }
 
