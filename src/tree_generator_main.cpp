@@ -26,8 +26,31 @@ int main(int argc, char** argv)
 
     // print_tree(vm_tree);
 
-    const char* json_filename = "tree.json";
+    const char* json_filename = "tree2.json";
     tree_to_json(vm_tree, json_filename);
+
+    // tree<uint16_t> my_tree;
+
+    // tree<uint16_t>::iterator iA = my_tree.insert(my_tree.end(), 0x11);
+    // tree<uint16_t>::iterator iB = my_tree.append_child(iA, 0x22);
+    // tree<uint16_t>::iterator iB1 = my_tree.append_child(iA, 0x33);
+    // tree<uint16_t>::iterator iC = my_tree.append_child(iB, 0x44); 
+    // tree<uint16_t>::iterator iC1 = my_tree.append_child(iB, 0x45); 
+    // tree<uint16_t>::iterator iC2 = my_tree.append_child(iB, 0x46); 
+    // my_tree.append_child(iC1, 0xf6); 
+    // my_tree.append_child(iC1, 0xf7); 
+    // my_tree.append_child(iC1, 0xf8); 
+
+    // my_tree.append_child(iC2, 0xf8); 
+
+
+    // tree<uint16_t>::iterator iD = my_tree.append_child(iC1, 0xf3); 
+    // my_tree.append_child(iD, 0xc1); 
+    // my_tree.append_child(iD, 0xc2); 
+    // my_tree.append_child(iD, 0xc3); 
+    // my_tree.append_child(iD, 0xc4); 
+
+    // tree_to_json(my_tree, json_filename);
 
 }
 

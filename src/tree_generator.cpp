@@ -205,86 +205,109 @@ void print_tree(const tree<uint16_t>& tr)
 void tree_to_json(const tree<uint16_t>& tr, const char* json_filename)
 {
     tree<uint16_t>::pre_order_iterator it = tr.begin();
-    tree<uint16_t>::pre_order_iterator end = tr.end();
 
     if(!tr.is_valid(it)) return;
 
-    uint32_t rootdepth = tr.depth(it);
 
-    FILE* json_file = fopen(json_filename, "w");
-    fprintf(json_file, "[\n");
+    FILE* file = fopen(json_filename, "w");
+    // fprintf(file, "[\n");
 
-    while(it != end) 
-    {
-        uint8_t cnt = 0;
-        for(cnt = 0; cnt < tr.depth(it) - rootdepth; ++cnt)
-        {
-            fprintf(json_file, "   ");
-        }
-        
-        fprintf(json_file, "{\"Item\": { \"Name\": \"%x\" },\n", (*it));
+    self_to_json(file, tr, it);
 
-        if (cnt < VPN_BLOCKS_AMNT - 2)
-        {
-            for (uint8_t i = 0; i < tr.depth(it) - rootdepth; ++i)
-            {
-                fprintf(json_file, "   ");
-            }
-
-            fprintf(json_file, "\"Children\": [\n");
-        }
-        // std::cout << (*it) << std::endl << std::flush;
-        
-        // while (cnt != 0)
-        // {
-        //     fprintf(json_file, "}]");
-        //     --cnt;
-        // }
-
-        ++it;
-    }
-
-    fprintf(json_file, "]");
-    fclose(json_file);
+    // fprintf(file, "]");
+    fclose(file);
 }
 
-// {
-//     "Item": {
-//         "Name": "B"
-//     },
-//     "Children": [{
-//         "Item": {
-//            "Name": "BA"
-//         },
-//         "Children": [{
-//             "Item": {
-//                 "Name": "BAA"
-//             },
-//             "Children": [{
-//                 "Item": {
-//                     "Name": "BAAA"
-//                 }
-//             }, {
-//                 "Item": {
-//                     "Name": "BAAB"
-//                 }
-//             }, {
-//                 "Item": {
-//                     "Name": "BAAC"
-//                 }
-//             }]
-//         }, {
-//             "Item": {
-//                 "Name": "BAB"
-//             },
-//             "Children": [{
-//                 "Item": {
-//                     "Name": "BABA"
-//                 }
-//             }]
-//        }]
-//     }, {
-//         "Item":{
-//             "Name": "BB"
-//         }
-//     }]
+void self_to_json(FILE* file, const tree<uint16_t>& tr, tree<uint16_t>::pre_order_iterator it)
+{
+    auto old_it = it;
+    uint8_t old_depth = tr.depth(it) - tr.depth(tr.begin());
+
+    depth_based_space(file, old_depth);
+    fprintf(file, "{\"Item\": { \"Name\": \"%x\" }\n", (*old_it));
+
+    it++;
+
+    if (it == tr.end())
+    {
+        depth_based_space(file, old_depth);
+        fprintf(file, "}\n");
+
+        uint8_t bubble = old_depth - 1;
+        while (bubble != 0)
+        {
+            depth_based_space(file, bubble);
+            fprintf(file, "]\n");
+    
+            depth_based_space(file, bubble);
+            fprintf(file, "}\n");
+            bubble--;
+        }
+
+        fprintf(file, "]\n");
+        fprintf(file, "}\n");
+
+        return;
+    };
+
+    uint8_t depth = tr.depth(it) - tr.depth(tr.begin());
+
+    if (depth > old_depth)
+    {
+        depth_based_space(file, old_depth);
+        fprintf(file, "  ,\"Children\": [\n");
+
+        
+        self_to_json(file, tr, it);
+    }
+
+    if (depth == old_depth)
+    {
+        depth_based_space(file, old_depth);
+        fprintf(file, "}, \n");
+
+        self_to_json(file, tr, it);
+    }
+
+    if (depth < old_depth)
+    {
+        uint8_t cycles = old_depth - depth;
+
+        for (uint8_t cnt = 0; cnt < cycles; cnt++)
+        {
+            depth_based_space(file, old_depth - cnt);
+            fprintf(file, "}\n");   
+            
+            depth_based_space(file, old_depth - cnt - 1);
+            fprintf(file, "]\n");    
+        }
+        
+
+
+
+        // auto next_it = it;
+        // next_it++;
+
+        // if ((next_it != tr.end()) && ((tr.depth(next_it) - tr.depth(tr.begin())) < depth))
+        // {
+        //     depth_based_space(file, depth);
+        //     fprintf(file, "}\n");
+        // }
+        // else 
+        // {
+            depth_based_space(file, depth);
+            fprintf(file, "},\n");
+        // }
+
+        self_to_json(file, tr, it);
+    }
+    
+}
+
+void depth_based_space(FILE* file, uint8_t depth)
+{
+    for (uint8_t i = 0; i < depth; ++i)
+    {
+        fprintf(file, "   ");
+    }
+}

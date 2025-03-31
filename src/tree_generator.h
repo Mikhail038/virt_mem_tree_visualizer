@@ -58,4 +58,9 @@ void print_tree(const tree<uint16_t>& tr);
 
 void tree_to_json(const tree<uint16_t>& tr, const char* json_filename);
 
+void self_to_json(FILE* file, const tree<uint16_t>& tr, tree<uint16_t>::pre_order_iterator it);
+
+void depth_based_space(FILE* file, uint8_t depth);
+
+
 #endif
