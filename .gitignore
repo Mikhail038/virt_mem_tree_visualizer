@@ -2,4 +2,4 @@ bin
 build
 tmp
 .vscode
-*.json
+tree.json
