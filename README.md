@@ -1,6 +1,6 @@
 # virt_mem_tree_visualizer
 
-pet-project to visualize graph of virtual memory multilevel page tables.
+pet-project to visualize graph of virtual memory multilevel page tables (https://en.wikipedia.org/wiki/Page_table#Multilevel_page_tables).
 
 ## Properties
 
