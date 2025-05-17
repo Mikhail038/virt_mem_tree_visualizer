@@ -22,17 +22,6 @@ You need to change this line
 Defaults secure_path = [something-you-do-no-need-to-change]:<path-to-pagemap>
 ~~~
 
-### python + smth
-
-To generate a visualization you will need python3 
-
-For Fedora:
-~~~bash
-> sudo dnf install python3
-~~~
-
-and smth
-
 ## Build
 
 ~~~bash
